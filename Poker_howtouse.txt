@@ -1,0 +1,27 @@
+[CygwinでのPokerの実行方法]
+
+基本的に資料通りで出来るが、DeckInitのような実行ファイルは
+環境依存のためコンパイルし直す必要がある。
+一度実行した後、Makeファイルを作成しておけば、
+これからの実験が楽になるためしていたほうがいいと思う。
+
+不備とかあったら変えといて
+
+// デッキの生成
+$ cd src/
+
+$ gcc -o DeckInit DeckInit.c CardLib.c
+
+$ cp DeckInit.exe ../sys/
+
+// コンパイル
+$ cd usr/s13t...
+
+$ sh ../../sys/Make2015.sh
+
+// 山札の生成
+$ ../../sys/DeckInit.exe 山札数(整数) > 山札ファイル(例：Deck_01.txt)
+
+// 実行
+$ ./PokerExec.exe s13t... 1000(トライ数) 山札のファイル名 0
+
