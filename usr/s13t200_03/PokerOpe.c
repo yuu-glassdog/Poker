@@ -6,7 +6,7 @@
 //  Linux CentOS 6.7  GCC 4.4.7
 //--------------------------------------------------------------------
 //  最所研究室  13T232 近藤裕基
-//  2015.12.15
+//  2016.01.12
 //====================================================================
 
 
@@ -36,11 +36,18 @@
 
 #include "Poker.h"
 
+int myhn[5];
+int num[13] = {0};  // 数位ごとの個数を格納する配列(A23456789TJQK)
+int sut[4] = {0};   // 種類ごとの個数を格納する配列(SHDC)
+
 //--------------------------------------------------------------------
 //  関数宣言
 //--------------------------------------------------------------------
 
-
+void copy_hd(const int hd[]);
+void check_hd(const int hd[]);
+void reset_array();
+int chance_flash(const int hd[]);
 
 //====================================================================
 //  戦略
@@ -61,14 +68,90 @@ us : 捨札数
 
 --------------------------------------------------------------------*/
 
-int strategy(const int hd[], const int fd[], int cg, int tk, const int ud[], int us)
-{
-  if ( tk < 2 ) { return -1; }
-  if ( poker_point(hd) > P2 ) { return -1; }
-  return 0;
+int strategy(const int hd[], const int fd[], int cg, int tk, const int ud[], int us) {
+    
+    int chp = 0;    // 交換する位置
+    int k;  // 反復変数
+    int t;  // 一時変数
+
+    copy_hd(hd);    // 手札の複製
+    check_hd(hd);   // 手札の確認
+    
+    // フラッシュ
+    if ( ( chp = chance_flash(hd) ) != -1 && cg < 5) {
+        return chp;
+    }
+
+    // 1テイク目は捨てる
+    if ( tk < 2 ) { reset_array(); return -1; }
+    if ( poker_point(myhn) > P2 ) { reset_array(); return -1; }
+
+    return 0;
 }
 
 
 //====================================================================
 //  補助関数
 //====================================================================
+
+// 手札の複製
+void copy_hd(const int hd[]) {
+    
+    int k;    // 反復変数
+
+    for ( k = 0; k < 5; k++ ){
+        myhn[k] = hd[k];
+    }
+}
+
+// 手札の確認
+void check_hd(const int hd[]) {
+    
+    int k;  // 反復変数
+    int t;  // 一時変数
+    
+    // 数位および種類ごとの計数
+    for( k = 0; k < HNUM; k++ ) { t = hd[k] % 13; num[t]++; }   // 数位
+    for( k = 0; k < HNUM; k++ ) { t = hd[k] / 13; sut[t]++; }   // 種類
+}
+
+// 各配列のリセット
+void reset_array(void) {
+    
+    int k;
+    
+    for ( k = 0; k < HNUM; k++ ) { myhn[k] = 0; }
+    for ( k = 0; k < 13; k++ ) { num[k] = 0; }
+    for ( k = 0; k < 4; k++ ) { sut[k] = 0; }
+}
+
+// あと1枚でフラッシュか確認
+int chance_flash(const int hd[]) {
+    
+    int chp;        // 交換すべき位置
+    int high, low;  // 各種類の境界値
+    int k;
+    int j;
+
+    for ( k = 0; k < 4; k++ ) {
+        // 4種どれかが4枚ある場合
+        if ( sut[k] == 4 ) {
+            // 境界値の確認
+            switch(k){
+                case 0: low = 0; high = 12; break;  // スペード
+                case 1: low = 13; high = 25; break; // ハート
+                case 2: low = 26; high = 38; break; // ダイヤ
+                case 3: low = 39; high = 51; break; // クラブ
+            }
+            
+            // 交換すべき位置を探索して返却
+            for ( j = 0; j < HNUM; j++ ) {
+                if ( hd[j] < low || high < hd[j] ) { return j; }
+            }
+            
+        }
+    }
+    
+    // フラッシュが望めない場合
+    return -1;
+}
