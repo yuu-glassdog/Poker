@@ -36,9 +36,13 @@
 
 #include "Poker.h"
 
-int myhn[5];
-int num[13] = {0};  // 数位ごとの個数を格納する配列(A23456789TJQK)
-int sut[4] = {0};   // 種類ごとの個数を格納する配列(SHDC)
+#define HAND 5
+#define NUM 13
+#define SUT 4
+
+int myhn[HAND];
+int num[NUM] = {0};  // 数位ごとの個数を格納する配列(A23456789TJQK)
+int sut[SUT] = {0};   // 種類ごとの個数を格納する配列(SHDC)
 
 //--------------------------------------------------------------------
 //  関数宣言
@@ -48,6 +52,7 @@ void copy_hd(const int hd[]);
 void check_hd(const int hd[]);
 void reset_array();
 int chance_flash(const int hd[]);
+int chance_4card(const int hd[]);
 
 //====================================================================
 //  戦略
@@ -78,9 +83,14 @@ int strategy(const int hd[], const int fd[], int cg, int tk, const int ud[], int
     check_hd(hd);   // 手札の確認
     
     // フラッシュ
-    if ( ( chp = chance_flash(hd) ) != -1 && cg < 5) {
+    if ( ( chp = chance_flash(hd) ) != -1 ) {
         return chp;
     }
+    // フォーカード
+    if ( ( chp = chance_flash(hd) ) != -1 ) {
+        return chp;
+    }
+    if ( poker_point(myhn) >= P6 ) { reset_array(); return -1; }
 
     // 1テイク目は捨てる
     if ( tk < 2 ) { reset_array(); return -1; }
@@ -99,7 +109,7 @@ void copy_hd(const int hd[]) {
     
     int k;    // 反復変数
 
-    for ( k = 0; k < 5; k++ ){
+    for ( k = 0; k < HAND; k++ ){
         myhn[k] = hd[k];
     }
 }
@@ -111,8 +121,8 @@ void check_hd(const int hd[]) {
     int t;  // 一時変数
     
     // 数位および種類ごとの計数
-    for( k = 0; k < HNUM; k++ ) { t = hd[k] % 13; num[t]++; }   // 数位
-    for( k = 0; k < HNUM; k++ ) { t = hd[k] / 13; sut[t]++; }   // 種類
+    for( k = 0; k < HNUM; k++ ) { t = hd[k] % NUM; num[t]++; }   // 数位
+    for( k = 0; k < HNUM; k++ ) { t = hd[k] / NUM; sut[t]++; }   // 種類
 }
 
 // 各配列のリセット
@@ -121,8 +131,8 @@ void reset_array(void) {
     int k;
     
     for ( k = 0; k < HNUM; k++ ) { myhn[k] = 0; }
-    for ( k = 0; k < 13; k++ ) { num[k] = 0; }
-    for ( k = 0; k < 4; k++ ) { sut[k] = 0; }
+    for ( k = 0; k < NUM; k++ ) { num[k] = 0; }
+    for ( k = 0; k < SUT; k++ ) { sut[k] = 0; }
 }
 
 // あと1枚でフラッシュか確認
@@ -133,9 +143,9 @@ int chance_flash(const int hd[]) {
     int k;
     int j;
 
-    for ( k = 0; k < 4; k++ ) {
+    for ( k = 0; k < SUT; k++ ) {
         // 4種どれかが4枚ある場合
-        if ( sut[k] == 4 ) {
+        if ( sut[k] == SUT ) {
             // 境界値の確認
             switch(k){
                 case 0: low = 0; high = 12; break;  // スペード
@@ -153,5 +163,29 @@ int chance_flash(const int hd[]) {
     }
     
     // フラッシュが望めない場合
+    return -1;
+}
+
+// あと1枚でフォーカードか確認
+int chance_4card(const int hd[]) {
+    
+    int chp;    // 交換すべき位置
+    int target; // 狙うカードの位
+    int k;
+    int j;
+
+    for ( k = 0; k < NUM; k++ ) {
+        // 同位札が3枚ある場合(スリーカインズの場合)
+        if ( num[k] == 3 ) {
+            target = k + 1;
+            // 交換すべき位置を探索して返却
+            for ( j = 0; j < HNUM; j++ ) {
+                if ( hd[j] % NUM != target ) { return j; }
+            }
+            
+        }
+    }
+    
+    // フォーカードが望めない場合
     return -1;
 }
