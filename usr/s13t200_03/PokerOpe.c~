@@ -100,13 +100,13 @@ int strategy(const int hd[], const int fd[], int cg, int tk, const int ud[], int
 
     // ペアを作る試み
     make_pair(hd);
-    /*
+    
     for ( k = 0; k < HNUM; k++ ) { printf("%d ", hd[k]); }
     puts("");
     for ( k = 0; k < HNUM; k++ ) { printf("%d ", chp[k]); }
     puts("");
     puts("");
-    */
+
     // 交換するカードを決定
     return change_card();
 
@@ -157,7 +157,7 @@ void chance_flash(const int hd[]) {
 
     for ( k = 0; k < SUT; k++ ) {
         // 4種どれかが3枚か4枚ある場合
-        if ( sut[k] == SUT-1 || sut[k] == SUT ){ //sut[k] == SUT-2 ) {
+        if ( sut[k] == SUT-1 || sut[k] == SUT || ){ //sut[k] == SUT-2 ) {
             //chp[k] += sut[k]*5; 
             // 交換すべき位置を探索して返却
             for ( j = 0; j < HNUM; j++ ) {
