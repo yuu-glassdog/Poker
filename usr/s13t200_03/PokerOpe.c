@@ -55,6 +55,7 @@ void reset_array();
 void chance_flash(const int hd[]);
 void chance_4card(const int hd[]);
 void chance_fullhause(const int hd[]);
+void chance_straight(const int hd[]);
 int change_card();
 void make_pair(const int hd[]);
 
@@ -97,21 +98,12 @@ int strategy(const int hd[], const int fd[], int cg, int tk, const int ud[], int
     
     // フォーカードの可能性を確認
     chance_4card(hd);
+    
+    // ストレートの可能性を確認
+    chance_straight(hd);
 
-    // ペアを作る試み
-    make_pair(hd);
-    /*
-    for ( k = 0; k < HNUM; k++ ) { printf("%d ", hd[k]); }
-    puts("");
-    for ( k = 0; k < HNUM; k++ ) { printf("%d ", chp[k]); }
-    puts("");
-    puts("");
-    */
     // 交換するカードを決定
     return change_card();
-
-    //if ( tk < 2 ) { reset_array(); return -1; }
-    //if ( poker_point(myhn) >= P2 ) { reset_array(); return -1; }
 }
 
 //====================================================================
@@ -208,6 +200,33 @@ void chance_fullhause(const int hd[]) {
     }
 }
 
+// あと1枚でストレートか確認
+void chance_straight(const int hd[]) {
+    
+    int ct[NUM-5] = {0};    // 5数による組中で1枚の位
+    int target;             // 抜けている数
+    int k;
+    int j;
+
+    for ( k = 0; k <= NUM-5; k++ ) {
+        // k ～ k+4 までで1枚の位がいくつあるか数える
+        for ( j = k; j < k+5; j++ ) {
+            if ( num[j] == 1 ) { ct[k]++; }   
+        }
+        // 4枚の順位札が揃っている場合
+        if ( ct[k] == 4 ) {
+            // 抜けている数の確認
+            for ( j = k; j < k+5; j++ ) {
+                if ( num[j] == 0 ) { target = j; break; }
+            }
+            // 手札から要らない札を識別
+            for ( j = 0; j < HNUM; j++ ) {
+                if ( hd[j] % NUM == target ) { chp[j] += 6; }
+            }
+        }
+    }
+}
+
 // 交換するカードの決定
 int change_card() {
     
@@ -220,17 +239,4 @@ int change_card() {
     }
 
     return point;
-}
-
-// ペアを作る試み
-void make_pair(const int hd[]) {
-    
-    int ct = 0; // ペアの数
-    int need;   //
-    int k;
-    
-    // ペアが存在するかどうか確認
-    for ( k = 0; k < NUM; k++ ) {
-        if ( num[k] >= 2 ) { ct++; }
-    }
 }
