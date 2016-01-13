@@ -43,7 +43,8 @@
 int myhn[HAND];
 int num[NUM] = {0};     // 数位ごとの個数を格納する配列(A23456789TJQK)
 int sut[SUT] = {0};     // 種類ごとの個数を格納する配列(SHDC)
-int chp[HAND] = {0};    // 重み付け配列
+int chp[HAND] = {0};    // 交換すべき札の重み付け配列
+int no_pair;            // ノーペアを示すフラグ
 
 //--------------------------------------------------------------------
 //  関数宣言
@@ -56,8 +57,8 @@ void chance_flash(const int hd[]);
 void chance_4card(const int hd[]);
 void chance_fullhause(const int hd[]);
 void chance_straight(const int hd[]);
-int change_card();
-void make_pair(const int hd[]);
+int make_pair(const int hd[], const int ud[], int us);
+int change_card(const int hd[], const int ud[], int us);
 
 //====================================================================
 //  戦略
@@ -83,9 +84,10 @@ int strategy(const int hd[], const int fd[], int cg, int tk, const int ud[], int
     int k;  // 反復変数
     int t;  // 一時変数
     
-    reset_array();
-    copy_hd(hd);    // 手札の複製
-    check_hd(hd);   // 手札の確認
+    reset_array();              // 各配列の初期化
+    no_pair = 1;                // ノーペアフラグを立てる
+    arr_copy(myhn, hd, HNUM);   // 手札の複製
+    check_hd(hd);               // 手札の確認
     
     // 得点がフルハウス以上ならOK
     if ( poker_point(myhn) >= P6 ) { return -1; }
@@ -103,22 +105,12 @@ int strategy(const int hd[], const int fd[], int cg, int tk, const int ud[], int
     chance_straight(hd);
 
     // 交換するカードを決定
-    return change_card();
+    return change_card(hd, ud, us);
 }
 
 //====================================================================
 //  補助関数
 //====================================================================
-
-// 手札の複製
-void copy_hd(const int hd[]) {
-    
-    int k;    // 反復変数
-
-    for ( k = 0; k < HAND; k++ ){
-        myhn[k] = hd[k];
-    }
-}
 
 // 手札の確認
 void check_hd(const int hd[]) {
@@ -149,11 +141,10 @@ void chance_flash(const int hd[]) {
 
     for ( k = 0; k < SUT; k++ ) {
         // 4種どれかが3枚か4枚ある場合
-        if ( sut[k] == SUT-1 || sut[k] == SUT ){ //sut[k] == SUT-2 ) {
-            //chp[k] += sut[k]*5; 
+        if ( sut[k] == SUT-1 || sut[k] == SUT ){
             // 交換すべき位置を探索して返却
             for ( j = 0; j < HNUM; j++ ) {
-                if ( hd[j] / NUM != k ) { chp[j] += 5; }
+                if ( hd[j] / NUM != k ) { chp[j] += 5; no_pair = 0; }
             }
         }
     }
@@ -172,7 +163,7 @@ void chance_4card(const int hd[]) {
             target = k + 1;
             // 交換すべき位置を探索して返却
             for ( j = 0; j < HNUM; j++ ) {
-                if ( hd[j] % NUM != target ) { chp[j] += 7; }
+                if ( hd[j] % NUM != target ) { chp[j] += 7; no_pair = 0; }
             }
             
         }
@@ -194,7 +185,7 @@ void chance_fullhause(const int hd[]) {
         if ( ct == 2 ) {           
             // 交換すべき位置を探索して返却
             for ( j = 0; j < HNUM; j++ ) {
-                if ( hd[j] % NUM != target[0] && hd[j] % NUM != target[1]) { chp[j] += 4; }
+                if ( hd[j] % NUM != target[0] && hd[j] % NUM != target[1]) { chp[j] += 4; no_pair = 0; }
             }            
         }
     }
@@ -227,8 +218,25 @@ void chance_straight(const int hd[]) {
     }
 }
 
+// 先読みしてペアを作る試み
+int make_pair(const int hd[], const int ud[], int us){
+    
+    int unum[NUM] = {0};    // 各位の捨て札数
+    int max = 0;
+    int k;
+    int t;
+
+    // 各位の捨て札数を確認
+    for( k = 0; k < us; k++ ) { t = ud[k] % NUM; unum[t]++; }
+    // 手札の中で、捨て札数が最も多い位の札
+    for( k = 0; k < HNUM; k++ ) {
+        if( unum[hd[k] % NUM] > max ) { max = k; }
+    }
+    return max;
+}
+
 // 交換するカードの決定
-int change_card() {
+int change_card(const int hd[], const int ud[], int us) {
     
     int max = 0;
     int point = 0;
@@ -237,6 +245,8 @@ int change_card() {
     for ( k = 0; k < HNUM; k++ ) {
         if ( chp[k] > max ) { max = chp[k]; point = k; }
     }
+    // ブタの場合にペアを作る試み
+    if ( max == 0 ) { point = make_pair(hd, ud, us); } 
 
     return point;
 }
