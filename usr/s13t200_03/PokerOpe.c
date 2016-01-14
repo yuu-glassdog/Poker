@@ -180,7 +180,7 @@ void chance_fullhause(const int hd[]) {
 
     for ( k = 0; k < NUM; k++ ) {
         // ペアを数える
-        if ( num[k] == 2 ) { target[ct] = k + 1; ct++; }
+        if ( num[k] == 2 ) { target[ct] = k; ct++; }
         // ペアが2つある(ツーペア)の場合
         if ( ct == 2 ) {           
             // 交換すべき位置を探索して返却
