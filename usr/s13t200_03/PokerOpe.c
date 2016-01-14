@@ -194,21 +194,27 @@ void chance_fullhause(const int hd[]) {
 // あと1枚でストレートか確認
 void chance_straight(const int hd[]) {
     
-    int ct[NUM-5] = {0};    // 5数による組中で1枚の位
+    int ct[NUM-3] = {0};    // 5数による組中で1枚の位
     int target;             // 抜けている数
     int k;
     int j;
 
-    for ( k = 0; k <= NUM-5; k++ ) {
+    for ( k = 0; k < NUM-3; k++ ) {
         // k ～ k+4 までで1枚の位がいくつあるか数える
         for ( j = k; j < k+5; j++ ) {
-            if ( num[j] == 1 ) { ct[k]++; }   
+            // 10～A のときのA
+            if ( j == 13 && num[0] == 1 ) { ct[k]++; } 
+            // それ以外
+            else if ( num[j] == 1 ) { ct[k]++; }
         }
         // 4枚の順位札が揃っている場合
         if ( ct[k] == 4 ) {
             // 抜けている数の確認
             for ( j = k; j < k+5; j++ ) {
-                if ( num[j] == 0 ) { target = j; break; }
+                // 10～AのときのA
+                if ( j == 13 && num[0] == 0 ) { target = 0; break; }
+                // それ以外
+                else if ( num[j] == 0 ) { target = j; break; }
             }
             // 手札から要らない札を識別
             for ( j = 0; j < HNUM; j++ ) {
