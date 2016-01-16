@@ -214,7 +214,7 @@ void chance_straight(const int hd[]) {
                 // それ以外
                 else if ( num[j] == 0 ) { target = j; break; }
             }
-            // 手札から要らない札を識別
+            // 手札から要らない札を識別して重み付け
             for ( j = 0; j < HNUM; j++ ) {
                 if ( hd[j] % NUM == target ) { chp[j] += 6; }
             }
@@ -226,29 +226,33 @@ void chance_straight(const int hd[]) {
 int make_pair(const int hd[], const int ud[], int us){
     
     int unum[NUM] = {0};    // 各位の捨て札数
+    int usut[SUT] = {0};    // 各種の捨て札数
     int save[HNUM] = {0};   // 残すべき札の重み付け配列
     int point;              // 交換する札の位置
     int max = 0;
+    int max2 = 0;
     int min = NUM;
     int k;
 
     // 残すべき札の重み付け
     for( k = 0; k < HNUM; k++ ) {
         // 同種札がある
-        if ( sut[hd[k] / NUM] >= 2 ) { save[k] += 3; }
+        if ( sut[hd[k] / NUM] >= 2 ) { save[k] += 6; }
         // 同位札がある
-        if ( num[hd[k] % NUM] >= 2 ) { save[k] += 5; }
+        if ( num[hd[k] % NUM] >= 2 ) { save[k] += 7; }
         // 10JQKAである
         if ( hd[k] % NUM >= 9 || hd[k] % NUM == 0 ) { save[k] += 1; }
     }
 
     // 各位の捨て札数を確認
-    for( k = 0; k < us; k++ ) { unum[ud[k] % NUM]++; }
+    for( k = 0; k < us; k++ ) { unum[ud[k] % NUM]++; usut[ud[k] / NUM]++; }
     // 捨て札数が最も多い位の札から重みを減らす
     for( k = 0; k < HNUM; k++ ) {
         if ( unum[hd[k] % NUM] > max ) { max = k; }
+        if ( usut[hd[k] / NUM] > max2 ) { max2 = k; }
     }
-    save[max] -= 1;
+    save[max] -= 2;
+    save[max2] -= 1;
     
     // 交換する札の決定
     for ( k = 0; k < HNUM; k++ ) {
