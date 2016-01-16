@@ -53,7 +53,7 @@ int chp[HAND] = {0};    // 交換すべき札の重み付け配列
 
 void check_card(const int hd[], const int ud[], int us);
 void reset_array(void);
-void chance_flash(const int hd[]);
+void chance_flush(const int hd[]);
 void chance_4card(const int hd[]);
 void chance_fullhause(const int hd[]);
 void chance_straight(const int hd[]);
@@ -92,7 +92,7 @@ int strategy(const int hd[], const int fd[], int cg, int tk, const int ud[], int
     if ( poker_point(myhn) >= P6 ) { return -1; }
     
     // フラッシュの可能性を確認
-    chance_flash(hd);
+    chance_flush(hd);
     
     // フルハウスの可能性を確認
     chance_fullhause(hd);
@@ -143,17 +143,18 @@ void reset_array(void) {
 }
 
 // あと1枚でフラッシュか確認
-void chance_flash(const int hd[]) {
+void chance_flush(const int hd[]) {
     
-    int k;
-    int j;
+    int i, j;
+    int t;
 
-    for ( k = 0; k < SUT; k++ ) {
+    for ( i = 0; i < SUT; i++ ) {
         // 4種どれかが3枚か4枚ある場合
-        if ( sut[k] == SUT-1 || sut[k] == SUT ){
+        if ( sut[i] == SUT-1 || sut[i] == SUT ){
             // 交換すべき位置を探索して返却
             for ( j = 0; j < HNUM; j++ ) {
-                if ( hd[j] / NUM != k ) { chp[j] += 2; }
+                t = hd[j] / NUM;
+                if ( t != i ) { chp[j] += 2; }
             }
         }
     }
@@ -163,16 +164,17 @@ void chance_flash(const int hd[]) {
 void chance_4card(const int hd[]) {
     
     int target; // 狙うカードの位
-    int k;
-    int j;
+    int i, j;
+    int t;
 
-    for ( k = 0; k < NUM; k++ ) {
+    for ( i = 0; i < NUM; i++ ) {
         // 同位札が3枚ある(スリーカインズ)の場合
-        if ( num[k] == 3 ) {
-            target = k + 1;
+        if ( num[i] == 3 ) {
+            target = i;
             // 交換すべき位置を探索して返却
             for ( j = 0; j < HNUM; j++ ) {
-                if ( hd[j] % NUM != target ) { chp[j] += 4; }
+                t = hd[j] % NUM;
+                if ( t != target ) { chp[j] += 4; }
             }
             
         }
@@ -233,13 +235,15 @@ void chance_straight(const int hd[]) {
             }
             // 手札から要らない札を識別して重み付け
             for ( j = 0; j < HNUM; j++ ) {
-                if ( hd[j] % NUM == target ) { chp[j] += 3; }
+                t = hd[j] % NUM;
+                //if ( t == target && unum[t] != 4 ) { chp[j] += 3; }
+                if ( t == target ) { chp[j] += 3; }
             }
         }
     }
 }
 
-// 先読みしてペアを作る試み
+// 先読みして役を作る試み
 int make_pair(const int hd[]){
     
     int save[HNUM] = {0};   // 残すべき札の重み付け配列
