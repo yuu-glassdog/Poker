@@ -142,7 +142,7 @@ void chance_flash(const int hd[]) {
         if ( sut[k] == SUT-1 || sut[k] == SUT ){
             // 交換すべき位置を探索して返却
             for ( j = 0; j < HNUM; j++ ) {
-                if ( hd[j] / NUM != k ) { chp[j] += 5; }
+                if ( hd[j] / NUM != k ) { chp[j] += 2; }
             }
         }
     }
@@ -161,7 +161,7 @@ void chance_4card(const int hd[]) {
             target = k + 1;
             // 交換すべき位置を探索して返却
             for ( j = 0; j < HNUM; j++ ) {
-                if ( hd[j] % NUM != target ) { chp[j] += 7; }
+                if ( hd[j] % NUM != target ) { chp[j] += 4; }
             }
             
         }
@@ -183,7 +183,9 @@ void chance_fullhause(const int hd[]) {
         if ( ct == 2 ) {           
             // 交換すべき位置を探索して返却
             for ( j = 0; j < HNUM; j++ ) {
-                if ( hd[j] % NUM != target[0] && hd[j] % NUM != target[1]) { chp[j] += 4; }
+                if ( hd[j] % NUM != target[0] && hd[j] % NUM != target[1]) {
+                    chp[j] += 1;
+                }
             }            
         }
     }
@@ -216,7 +218,7 @@ void chance_straight(const int hd[]) {
             }
             // 手札から要らない札を識別して重み付け
             for ( j = 0; j < HNUM; j++ ) {
-                if ( hd[j] % NUM == target ) { chp[j] += 6; }
+                if ( hd[j] % NUM == target ) { chp[j] += 3; }
             }
         }
     }
