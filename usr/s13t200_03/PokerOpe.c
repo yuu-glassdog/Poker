@@ -226,30 +226,49 @@ void chance_straight(const int hd[]) {
 int make_pair(const int hd[], const int ud[], int us){
     
     int unum[NUM] = {0};    // 各位の捨て札数
+    int save[HNUM] = {0};   // 残すべき札の重み付け配列
+    int point;              // 交換する札の位置
     int max = 0;
+    int min = NUM;
     int k;
-    int t;
+
+    // 残すべき札の重み付け
+    for( k = 0; k < HNUM; k++ ) {
+        // 同種札がある
+        if ( sut[hd[k] / NUM] >= 2 ) { save[k] += 3; }
+        // 同位札がある
+        if ( num[hd[k] % NUM] >= 2 ) { save[k] += 5; }
+        // 10JQKAである
+        if ( hd[k] % NUM >= 9 || hd[k] % NUM == 0 ) { save[k] += 1; }
+    }
 
     // 各位の捨て札数を確認
-    for( k = 0; k < us; k++ ) { t = ud[k] % NUM; unum[t]++; }
-    // 手札の中で、捨て札数が最も多い位の札
+    for( k = 0; k < us; k++ ) { unum[ud[k] % NUM]++; }
+    // 捨て札数が最も多い位の札から重みを減らす
     for( k = 0; k < HNUM; k++ ) {
-        if( unum[hd[k] % NUM] > max ) { max = k; }
+        if ( unum[hd[k] % NUM] > max ) { max = k; }
     }
-    return max;
+    save[max] -= 1;
+    
+    // 交換する札の決定
+    for ( k = 0; k < HNUM; k++ ) {
+        if ( save[k] < min ) { min = save[k]; point = k; }
+    }
+    return point;
 }
 
-// 交換するカードの決定
+// 交換する札の決定
 int change_card(const int hd[], const int ud[], int us) {
     
     int max = 0;
     int point = 0;
     int k;
-
+    
+    // 狙う役のチャンスがある場合
     for ( k = 0; k < HNUM; k++ ) {
         if ( chp[k] > max ) { max = chp[k]; point = k; }
     }
-    // ブタの場合にペアを作る試み
+    // 狙いが外れている場合
     if ( max == 0 ) { point = make_pair(hd, ud, us); } 
 
     return point;
