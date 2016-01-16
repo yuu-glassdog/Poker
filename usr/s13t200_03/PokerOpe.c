@@ -184,14 +184,17 @@ void chance_fullhause(const int hd[]) {
     
     int ct = 0;             // ペアの数
     int target[2] = {0};    // ペアがある位
+    int three = 0;          // スリーカインズのフラッグ
     int i, j;
     int t;
 
     for ( i = 0; i < NUM; i++ ) {
         // ペアを数える
         if ( num[i] == 2 ) { target[ct] = i; ct++; }
+        // スリーカインズがある場合
+        if ( num[i] == 3 ) { target[0] = i; target[1] = i; three = 1; }
         // ペアが2つある(ツーペア)の場合
-        if ( ct == 2 ) {           
+        if ( ct == 2 || three ) {           
             // 交換すべき位置を探索して返却
             for ( j = 0; j < HNUM; j++ ) {
                 t = hd[j] % NUM;
