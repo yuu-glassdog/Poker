@@ -6,7 +6,7 @@
 //  Linux CentOS 6.7  GCC 4.4.7
 //--------------------------------------------------------------------
 //  最所研究室  13T232 近藤裕基
-//  2016.01.12
+//  2016.01.15
 //====================================================================
 
 
@@ -44,7 +44,6 @@ int myhn[HAND];
 int num[NUM] = {0};     // 数位ごとの個数を格納する配列(A23456789TJQK)
 int sut[SUT] = {0};     // 種類ごとの個数を格納する配列(SHDC)
 int chp[HAND] = {0};    // 交換すべき札の重み付け配列
-int no_pair;            // ノーペアを示すフラグ
 
 //--------------------------------------------------------------------
 //  関数宣言
@@ -85,7 +84,6 @@ int strategy(const int hd[], const int fd[], int cg, int tk, const int ud[], int
     int t;  // 一時変数
     
     reset_array();              // 各配列の初期化
-    no_pair = 1;                // ノーペアフラグを立てる
     arr_copy(myhn, hd, HNUM);   // 手札の複製
     check_hd(hd);               // 手札の確認
     
@@ -144,7 +142,7 @@ void chance_flash(const int hd[]) {
         if ( sut[k] == SUT-1 || sut[k] == SUT ){
             // 交換すべき位置を探索して返却
             for ( j = 0; j < HNUM; j++ ) {
-                if ( hd[j] / NUM != k ) { chp[j] += 5; no_pair = 0; }
+                if ( hd[j] / NUM != k ) { chp[j] += 5; }
             }
         }
     }
@@ -163,7 +161,7 @@ void chance_4card(const int hd[]) {
             target = k + 1;
             // 交換すべき位置を探索して返却
             for ( j = 0; j < HNUM; j++ ) {
-                if ( hd[j] % NUM != target ) { chp[j] += 7; no_pair = 0; }
+                if ( hd[j] % NUM != target ) { chp[j] += 7; }
             }
             
         }
@@ -185,7 +183,7 @@ void chance_fullhause(const int hd[]) {
         if ( ct == 2 ) {           
             // 交換すべき位置を探索して返却
             for ( j = 0; j < HNUM; j++ ) {
-                if ( hd[j] % NUM != target[0] && hd[j] % NUM != target[1]) { chp[j] += 4; no_pair = 0; }
+                if ( hd[j] % NUM != target[0] && hd[j] % NUM != target[1]) { chp[j] += 4; }
             }            
         }
     }
