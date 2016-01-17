@@ -102,7 +102,7 @@ int strategy(const int hd[], const int fd[], int cg, int tk, const int ud[], int
     
     // ストレートの可能性を確認
     chance_straight(hd);
-
+    
     // 交換するカードを決定
     return change_card(hd);
 }
@@ -174,7 +174,7 @@ void chance_4card(const int hd[]) {
             // 交換すべき位置を探索して返却
             for ( j = 0; j < HNUM; j++ ) {
                 t = hd[j] % NUM;
-                if ( t != target ) { chp[j] += 4; }
+                if ( t != target ) { chp[j] += 4; } 
             }
             
         }
@@ -187,23 +187,37 @@ void chance_fullhause(const int hd[]) {
     int ct = 0;             // ペアの数
     int target[2] = {0};    // ペアがある位
     int three = 0;          // スリーカインズのフラッグ
+    int p[2] = {0};
     int i, j;
     int t;
+    int other = 0;
 
     for ( i = 0; i < NUM; i++ ) {
         // ペアを数える
         if ( num[i] == 2 ) { target[ct] = i; ct++; }
-        // スリーカインズがある場合
-        if ( num[i] == 3 ) { target[0] = i; target[1] = i; three = 1; }
-        // ペアが2つある(ツーペア)の場合
-        if ( ct == 2 || three ) {           
+        // スリーカインズの確認
+        //if ( num[i] == 3 ) { target[0] = i; target[1] = i; three = 1; }
+        if ( num[i] == 3 ) { three = 1; }
+        // ペアが2つある場合
+        if ( ct == 2 ) {           
             // 交換すべき位置を探索して返却
             for ( j = 0; j < HNUM; j++ ) {
                 t = hd[j] % NUM;
                 if ( t != target[0] && t != target[1] ) {
                     chp[j] += 1;
                 }
-            }            
+            }
+        }
+        // スリーカインズがある場合
+        if ( three ) {
+            for ( j = 0; j < HNUM; j++ ) {
+                t = hd[j] % NUM;
+                if ( num[t] == 1 && other <= 2 ) {
+                    target[other] = t; p[other] = j; other++;
+                }
+            }
+            if ( unum[target[0]] >= unum[target[1]] ) { chp[p[0]] += 1; }
+            else { chp[p[1]] += 1; }
         }
     }
 }
@@ -212,20 +226,20 @@ void chance_fullhause(const int hd[]) {
 void chance_straight(const int hd[]) {
     
     int ct[NUM-3] = {0};    // 5数による組中で1枚の位
-    int target;             // 抜けている数
+    int target;             // 抜けている位
     int i, j;
     int t;
 
     for ( i = 0; i < NUM-3; i++ ) {
-        // k ～ k+4 までで1枚の位がいくつあるか数える
+        // i ～ i+4 までで1枚の位がいくつあるか数える
         for ( j = i; j < i+5; j++ ) {
             // 10～A のときのA
             if ( j == 13 && num[0] == 1 ) { ct[i]++; } 
             // それ以外
-            else if ( num[j] == 1 ) { ct[i]++; }
+            else if ( num[j] >= 1 ) { ct[i]++; }
         }
         // 4枚の順位札が揃っている場合
-        if ( ct[i] == 4 ) {
+        if ( ct[i] >= 4 ) {
             // 抜けている数の確認
             for ( j = i; j < i+5; j++ ) {
                 // 10～AのときのA
@@ -236,8 +250,10 @@ void chance_straight(const int hd[]) {
             // 手札から要らない札を識別して重み付け
             for ( j = 0; j < HNUM; j++ ) {
                 t = hd[j] % NUM;
-                //if ( t == target && unum[t] != 4 ) { chp[j] += 3; }
+                // 抜けている位
                 if ( t == target ) { chp[j] += 3; }
+                // 2枚ある位
+                else if ( num[t] == 2 ) { chp[j] += 3; }
             }
         }
     }
