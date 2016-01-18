@@ -6,7 +6,7 @@
 //  Linux CentOS 6.7  GCC 4.4.7
 //--------------------------------------------------------------------
 //  最所研究室  13T232 近藤裕基
-//  2016.01.17
+//  2016.01.18
 //====================================================================
 
 
@@ -151,10 +151,11 @@ void chance_flush(const int hd[]) {
     for ( i = 0; i < SUT; i++ ) {
         // 4種どれかが3枚か4枚ある場合
         if ( sut[i] == SUT-1 || sut[i] == SUT ){
-            // 交換すべき位置を探索して返却
+            // 交換すべき位置を探索して重み付け
             for ( j = 0; j < HNUM; j++ ) {
                 t = hd[j] / NUM;
-                if ( t != i ) { chp[j] += 2; }
+                // その種の捨て札が8枚以下ならOK
+                if ( t != i && usut[i] <= 8 ) { chp[j] += 2; }
             }
         }
     }
@@ -171,10 +172,11 @@ void chance_4card(const int hd[]) {
         // 同位札が3枚ある(スリーカインズ)の場合
         if ( num[i] == 3 ) {
             target = i;
-            // 交換すべき位置を探索して返却
+            // 交換すべき位置を探索して重み付け
             for ( j = 0; j < HNUM; j++ ) {
                 t = hd[j] % NUM;
-                if ( t != target ) { chp[j] += 4; } 
+                // その位の捨て札が無ければOK
+                if ( t != target && unum[target] == 0 ) { chp[j] += 4; }
             }
             
         }
@@ -188,15 +190,14 @@ void chance_fullhause(const int hd[]) {
     int target[2] = {0};    // ペアがある位
     int three = 0;          // スリーカインズのフラッグ
     int p[2] = {0};
+    int other = 0;
     int i, j;
     int t;
-    int other = 0;
 
     for ( i = 0; i < NUM; i++ ) {
         // ペアを数える
         if ( num[i] == 2 ) { target[ct] = i; ct++; }
         // スリーカインズの確認
-        //if ( num[i] == 3 ) { target[0] = i; target[1] = i; three = 1; }
         if ( num[i] == 3 ) { three = 1; }
         // ペアが2つある場合
         if ( ct == 2 ) {           
@@ -311,3 +312,5 @@ int change_card(const int hd[]) {
 
     return point;
 }
+
+
